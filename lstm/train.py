@@ -41,6 +41,7 @@ def _get_train_data_loader(batch_size, training_dir):
 
     train_data = pd.read_csv(os.path.join(training_dir, "train_lstm.csv"), header=None, names=None)
 
+#     print(train_data)
     train_y = torch.from_numpy(train_data[[0]].values).float().squeeze()
     train_x = torch.from_numpy(train_data.drop([0], axis=1).values).float()
 
@@ -98,7 +99,7 @@ if __name__ == '__main__':
     parser.add_argument('--data-dir', type=str, default=os.environ['SM_CHANNEL_TRAIN'])
     
     # training params
-    parser.add_argument('--batch-size', type=int, default=10, metavar='N',
+    parser.add_argument('--batch-size', type=int, default=100, metavar='N',
                         help='input batch size for training (default: 10)')
     parser.add_argument('--epochs', type=int, default=10, metavar='N',
                         help='number of epochs to train (default: 10)')
@@ -120,8 +121,8 @@ if __name__ == '__main__':
     train_loader = _get_train_data_loader(args.batch_size, args.data_dir)
 
     model = LSTMClassifier(args.hidden_dim).to(device)
-    optimizer = torch.optim.Adam(lstm.parameters(), lr=args.learning_rate)
-    criterion = nn.MSELoss() # we are using MSE as we are using RMSE to evaluate the model
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
+    criterion = torch.nn.MSELoss() # we are using MSE as we are using RMSE to evaluate the model
 
     # Trains the model
     train(model, train_loader, args.epochs, criterion, optimizer, device)
