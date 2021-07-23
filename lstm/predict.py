@@ -1,17 +1,21 @@
 import argparse
-import json
+# import json
 import os
-import pickle
+# import pickle
 import sys
-import sagemaker_containers
-import pandas as pd
+# import sagemaker_containers
+# import pandas as pd
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data
 
+# from io import StringIO
+from six import BytesIO
+
 from model import LSTMClassifier
+NP_CONTENT_TYPE = 'application/x-npy'
 
 def model_fn(model_dir):
     """Load model"""
@@ -27,7 +31,7 @@ def model_fn(model_dir):
 
     # Determine the device and construct the model.
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = LSTMClassifier(model_info['hidden_dim'])
+    model = LSTMClassifier(model_info['sequence_size'], model_info['input_size'], model_info['hidden_dim'])
 
     # Load the stored model parameters.
     model_path = os.path.join(model_dir, 'model.pth')
@@ -41,15 +45,17 @@ def model_fn(model_dir):
     return model
 
 # Provided input data loading
-def input_fn(serialized_input_data, content_type):
+def input_fn(input_data, content_type):
+#     return input_data
     print('Deserializing the input data.')
     if content_type == NP_CONTENT_TYPE:
-        stream = BytesIO(serialized_input_data)
+        stream = BytesIO(input_data)
         return np.load(stream)
     raise Exception('Requested unsupported ContentType in content_type: ' + content_type)
 
 # Provided output data handling
 def output_fn(prediction_output, accept):
+#     return prediction_output
     print('Serializing the generated output.')
     if accept == NP_CONTENT_TYPE:
         stream = BytesIO()
@@ -65,6 +71,7 @@ def predict_fn(input_data, model):
     
     # Process input_data so that it is ready to be sent to our model.
     data = torch.from_numpy(input_data.astype('float32'))
+    print(data)
     data = data.to(device)
 
     # Put the model into evaluation mode

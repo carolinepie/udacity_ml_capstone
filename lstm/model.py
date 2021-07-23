@@ -1,13 +1,13 @@
 import torch.nn as nn
 
 class LSTMClassifier(nn.Module):
-    def __init__(self, hidden_dim):
+    def __init__(self, sequence_size, input_size, hidden_dim):
         """
         Initialize the model by settingg up the various layers.
         """
         super(LSTMClassifier, self).__init__()
 
-        self.lstm = nn.LSTM(input_size=16, hidden_size =hidden_dim)
+        self.lstm = nn.LSTM(input_size=input_size, hidden_size = hidden_dim, batch_first=True, num_layers=5)
         self.dense = nn.Linear(in_features=hidden_dim, out_features=1)
         self.hardswish = nn.Hardswish()
         
@@ -15,9 +15,13 @@ class LSTMClassifier(nn.Module):
         """
         Perform a forward pass of our model on some input.
         """
-        print(x)
-        lstm_out, _ = self.lstm(x)
-        print(lstm_out)
-        out = self.dense(lstm_out)
-        print(out)
-        return self.hardswish(out)
+#         print(x.shape)
+#         print(x)
+        lstm_out, (h_n, c_n) = self.lstm(x)
+#         print(h_n[-1])
+        out = self.dense(h_n[-1])
+        final=out
+#         final = self.hardswish(out)
+#         print('final')
+#         print(final)
+        return final
