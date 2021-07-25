@@ -33,20 +33,20 @@ def model_fn(model_dir):
         model.load_state_dict(torch.load(f))
 
     # set to eval mode
-    model.to(device).eval()
+    model.to(device).train()
 
     print("Done loading model.")
     return model
 
-def _get_train_data_loader(input_size, seq_length, batch_size, training_dir):
+def _get_train_data_loader(input_size, seq_length, batch_size, training_dir, train_file):
     print("Get train data loader.")
     print('batch_size: ' + str(batch_size))
 
-    train_data = pd.read_csv(os.path.join(training_dir, "train_lstm.csv"), header=None, names=None)
+    train_data = pd.read_csv(os.path.join(training_dir, train_file), header=None, names=None)
     
     train_y = torch.from_numpy(train_data[[0]].values).float().squeeze()
     train_x = torch.from_numpy(np.reshape(train_data.drop([0], axis=1).iloc[:,:input_size].values, (-1, input_size))).float()
-
+    
     train_ds = WindowDataset(train_x, train_y, seq_length=seq_length)
     return torch.utils.data.DataLoader(train_ds, batch_size=batch_size)
 
@@ -84,6 +84,7 @@ def train(model, train_loader, epochs, criterion, optimizer, device):
 
             # get predictions from model
             y_pred = model(batch_x).squeeze()
+#             print(y_pred)
             
             # perform backprop
             loss = criterion(y_pred, batch_y)
@@ -117,7 +118,8 @@ if __name__ == '__main__':
                         help='hidden dimension (default: 8)')
     parser.add_argument('--learning-rate', type=float, default=0.1, metavar='N',
                         help='learning rate (default: 0.1)')
-
+    parser.add_argument('--train-file', type=str, default='', metavar='N',
+                        help='training file')
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -126,7 +128,7 @@ if __name__ == '__main__':
     torch.manual_seed(args.seed)
 
     # Load training data.
-    train_loader = _get_train_data_loader(args.input_size, args.sequence_size, args.batch_size, args.data_dir)
+    train_loader = _get_train_data_loader(args.input_size, args.sequence_size, args.batch_size, args.data_dir, args.train_file)
 
     model = LSTMClassifier(args.sequence_size, args.input_size, args.hidden_dim).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
@@ -138,6 +140,7 @@ if __name__ == '__main__':
     model_info_path = os.path.join(args.model_dir, 'model_info.pth')
     with open(model_info_path, 'wb') as f:
         model_info = {
+            'train_file': args.train_file,
             'input_size': args.input_size,
             'hidden_dim': args.hidden_dim,
             'learning_rate': args.learning_rate,
