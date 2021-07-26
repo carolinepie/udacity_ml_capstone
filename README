@@ -1,0 +1,8 @@
+This project is the capstone project of the Udacity Machine Learning Engineer nano degree program. It is intended to be run on AWS Sagemaker.
+
+
+How to navigate code for this project:
+
+  For data processing: run the data_exploration.ipynb notebook in capstone_data/
+  For HAR benchmark model: run the har_model.ipynb notebook after data processing has completed
+  For LSTM model: the training workflow is held in lstm_model.ipynb notebook, but actual model implementation, including train and predict scripts and necessary helper classes are held in the lstm folder
