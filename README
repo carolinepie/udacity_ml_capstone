@@ -5,6 +5,8 @@ How to navigate code for this project:
 
   For data processing: run the data_exploration.ipynb notebook in capstone_data/
   For HAR benchmark model: run the har_model.ipynb notebook after data processing has completed
-  For LSTM model: the training workflow is held in lstm_model.ipynb notebook, but actual model implementation, including train and predict scripts and necessary helper classes are held in the lstm folder
+  For LSTM model: the training workflow is held in lstm_model.ipynb notebook, but the actual model implementation, 
+                  including train and predict scripts and necessary helper classes are held in the lstm folder
+                  the last execution of the lstm_model.ipynb was not in sequential order, so the output may seem out of place
 
 The project report is project_report.pdf, the project proposal is proposal.pdf, and the link to the proposal review is https://review.udacity.com/#!/reviews/3027200
